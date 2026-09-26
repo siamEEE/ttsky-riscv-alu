@@ -1,22 +1,4 @@
-/*
- * SKY130 integrated clock-gating wrapper.
- *
- * RTL simulation:
- *   use a latch-based behavioral ICG model.
- *
- * Synthesis / physical design:
- *   instantiate the real SKY130 ICG cell.
- */
-
-(* blackbox *)
-module sky130_fd_sc_hd__sdlclkp_1 (
-    input  wire CLK,
-    input  wire GATE,
-    input  wire SCE,
-    output wire GCLK
-);
-endmodule
-
+`default_nettype none
 
 module icg_cell (
     input  wire clk,
@@ -28,11 +10,13 @@ module icg_cell (
 `ifdef COCOTB_SIM
 
     /*
-     * Functional model of an integrated clock-gating cell.
+     * Behavioral model for RTL simulation.
      *
-     * The enable is captured while the clock is LOW and held
-     * stable while the clock is HIGH. This avoids runt pulses.
+     * The enable is captured only while clk is low.
+     * It therefore remains stable throughout the high
+     * phase of the clock.
      */
+
     reg en_latched;
 
     always @(clk or en or te) begin
@@ -45,8 +29,12 @@ module icg_cell (
 `else
 
     /*
-     * Real SKY130 implementation used by synthesis / PnR.
+     * Physical implementation.
+     *
+     * Tiny Tapeout / LibreLane resolves this cell using
+     * the SKY130 standard-cell library.
      */
+
     sky130_fd_sc_hd__sdlclkp_1 u_icg (
         .CLK  (clk),
         .GATE (en),
@@ -57,3 +45,5 @@ module icg_cell (
 `endif
 
 endmodule
+
+`default_nettype wire
