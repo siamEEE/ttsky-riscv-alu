@@ -6,12 +6,25 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v
+PROJECT_SOURCES = \
+	project.v \
+	alu_clock_gated_4d.v \
+	alu_partitioned_datapath_4d.v \
+	alu_decode.v \
+	alu_addsub.v \
+	adder_select_32.v \
+	adder_behavioral_32.v \
+	clz32_tree.v \
+	icg_cell.v 
 
 ifneq ($(GATES),yes)
 
-# RTL simulation:
-SIM_BUILD				= sim_build/rtl
+# RTL simulation
+SIM_BUILD = sim_build/rtl
+
+# Enable behavioral models for technology-specific cells.
+COMPILE_ARGS += -DCOCOTB_SIM
+
 VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
 
 else

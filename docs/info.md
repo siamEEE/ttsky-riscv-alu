@@ -1,25 +1,32 @@
 ## How it works
 
-This test design implements an 8-bit combinational adder.
+This project implements a 32-bit RISC-V arithmetic logic unit with
+four clock-gated functional domains: arithmetic/compare, logic,
+shift, and miscellaneous operations.
 
-The dedicated input bus `ui_in` provides operand A and the
-bidirectional input bus `uio_in` provides operand B.
+Because Tiny Tapeout provides an 8-bit dedicated input bus, operands
+are transferred into 32-bit input registers one byte at a time.
 
-The lower eight bits of A + B are presented on `uo_out`.
+The Tiny Tapeout wrapper does not modify the internal ALU datapath.
+It only provides a byte-oriented transport interface around the
+original 32-bit ALU core.
 
-The bidirectional pins are configured as inputs.
+The ALU uses SKY130 integrated clock-gating cells to suppress clock
+activity in functional domains that are not selected by the current
+operation.
 
 ## How to test
 
-Apply an 8-bit value to `ui_in` and another 8-bit value to `uio_in`.
+Operand A and operand B are loaded one byte at a time through ui_in.
 
-The resulting sum appears on `uo_out`.
+uio_in selects whether the byte is written to operand A, operand B,
+the ALU opcode register, or the output selector.
 
-For example:
+After an operation is selected, the 32-bit result can be read one
+byte at a time through uo_out.
 
-- A = 20
-- B = 30
-- Output = 50
+The automated Cocotb testbench verifies ALU behavior both at RTL and
+after gate-level implementation.
 
 ## External hardware
 
