@@ -1,60 +1,46 @@
 ## How it works
 
-This project implements a 32-bit RISC-V arithmetic logic unit with four
-clock-gated functional domains.
+This project implements a simple 32-bit arithmetic and logic unit with a 3-bit opcode.
 
-The four domains group arithmetic/comparison, logical, shift, and
-miscellaneous operations. SKY130 integrated clock-gating cells suppress
-clock activity in functional domains that are not required by the
-currently selected ALU operation.
+The eight operations are:
 
-Tiny Tapeout provides an 8-bit dedicated input bus, so the 32-bit
-operands are transferred into internal registers one byte at a time.
+| Opcode | Operation |
+| --- | --- |
+| 000 | A + B |
+| 001 | A - B |
+| 010 | A + 1 |
+| 011 | A - 1 |
+| 100 | A AND B |
+| 101 | A OR B |
+| 110 | A XOR B |
+| 111 | NOT A |
 
-The Tiny Tapeout wrapper does not change the internal 32-bit ALU
-datapath. It provides a byte-oriented interface around the original ALU.
+The ALU core is combinational. The Tiny Tapeout wrapper contains two 32-bit operand registers and a 3-bit opcode register.
 
-The result is also read one byte at a time through the 8-bit output bus.
+Tiny Tapeout provides an 8-bit dedicated input bus, so each 32-bit operand is loaded in four 8-bit transfers. The 32-bit result is read back in four 8-bit slices.
+
+There is no UART, clock gating, operand isolation, custom adder, or processor core in the ASIC.
 
 ## How to test
 
-The command field is carried on uio_in[2:0].
+The command is carried on `uio_in[2:0]`:
 
-Command 000 loads one byte of operand A.
+- `000`: load one byte of operand A
+- `001`: load one byte of operand B
+- `010`: load the ALU opcode from `ui_in[2:0]`
+- `011`: select one result byte for `uo_out`
 
-Command 001 loads one byte of operand B.
+For operand loading and result selection, `uio_in[4:3]` chooses the byte:
 
-For operand loading, uio_in[4:3] selects the byte position:
+- `00`: bits 7:0
+- `01`: bits 15:8
+- `10`: bits 23:16
+- `11`: bits 31:24
 
-00 selects bits 7:0.
+The Cocotb testbench checks every opcode with directed edge cases and randomized 32-bit operands. It also checks that deasserting `ena` prevents interface state from being modified.
 
-01 selects bits 15:8.
-
-10 selects bits 23:16.
-
-11 selects bits 31:24.
-
-Command 010 loads the ALU operation code from ui_in[3:0].
-
-Command 011 selects which output byte is presented on uo_out.
-uio_in[5:3] selects the output:
-
-000 selects result bits 7:0.
-
-001 selects result bits 15:8.
-
-010 selects result bits 23:16.
-
-011 selects result bits 31:24.
-
-100 selects the ALU status flags.
-
-The Cocotb testbench loads two 32-bit operands, performs an XOR
-operation, reconstructs the 32-bit result from the four output bytes,
-and compares the hardware result with the expected value.
-
-The same testbench is used for the Tiny Tapeout RTL and gate-level tests.
+The same testbench is used for RTL and gate-level simulation.
 
 ## External hardware
 
-None.
+None is required for simulation. The fabricated design can be exercised through the Tiny Tapeout development board by driving the input and bidirectional pins and reading `uo_out`.
