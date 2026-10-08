@@ -1,25 +1,18 @@
 project:
-  title:        "32-bit RISC-V ALU with Four-Domain Clock Gating"
+  title:        "32-bit 8-Operation ALU"
   author:       "Siam"
   discord:      ""
-  description:  "32-bit RISC-V ALU with four clock-gated functional domains implemented in SKY130 using LibreLane"
+  description:  "A simple 32-bit arithmetic and logic unit with a 3-bit opcode and byte-serial Tiny Tapeout interface"
   language:     "Verilog"
   clock_hz:     50000000
 
-  tiles: "2x2"
+  tiles: "1x1"
 
   top_module: "tt_um_siameee_riscv_alu"
 
   source_files:
     - "project.v"
-    - "alu_clock_gated_4d.v"
-    - "alu_partitioned_datapath_4d.v"
-    - "alu_decode.v"
-    - "alu_addsub.v"
-    - "adder_select_32.v"
-    - "adder_behavioral_32.v"
-    - "clz32_tree.v"
-    - "icg_cell.v"
+    - "alu_core.v"
 
 pinout:
   ui[0]: "data[0]"
@@ -43,9 +36,9 @@ pinout:
   uio[0]: "command[0]"
   uio[1]: "command[1]"
   uio[2]: "command[2]"
-  uio[3]: "selector[0]"
-  uio[4]: "selector[1]"
-  uio[5]: "selector[2]"
+  uio[3]: "byte_select[0]"
+  uio[4]: "byte_select[1]"
+  uio[5]: ""
   uio[6]: ""
   uio[7]: ""
 
